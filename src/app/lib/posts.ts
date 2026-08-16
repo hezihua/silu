@@ -2,6 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import GithubSlugger from "github-slugger";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeSlug from "rehype-slug";
+import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
+import rehypeStringify from "rehype-stringify";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "posts");
 
@@ -12,6 +21,7 @@ export interface PostMeta {
   date: string; // ISO 格式：YYYY-MM-DD 或 YYYY-MM-DDTHH:mm:ss
   lastModified: string; // ISO 格式
   tags: string[];
+  mdx?: boolean; // 默认 true；false 表示走纯 Markdown 渲染（绕过 MDX 的 JSX 解析）
 }
 
 // 将 ISO 日期格式化成「2026 年 8 月 16 日」或「2026 年 8 月 16 日 14:30」。
@@ -100,6 +110,7 @@ function parsePostFromFile(filePath: string): Post {
     date: published,
     lastModified: isoM,
     tags: data.tags ?? [],
+    mdx: data.mdx !== false, // 默认 true；frontmatter 写 `mdx: false` 才走纯 Markdown
     content,
     raw,
   };
