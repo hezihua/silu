@@ -9,9 +9,50 @@ export interface PostMeta {
   slug: string;
   title: string;
   description: string;
-  date: string;
+  date: string; // ISO 格式：YYYY-MM-DD 或 YYYY-MM-DDTHH:mm:ss
+  lastModified: string; // ISO 格式
   tags: string[];
 }
+
+// 将 ISO 日期格式化成「2026 年 8 月 16 日」或「2026 年 8 月 16 日 14:30」。
+// 仅当输入本身真实包含时间信息（T... 或 字符串含 `T`）时才显示时间部分。
+// 对于 frontmatter 的纯日期（YYYY-MM-DD），永远不显示 00:00 / 08:00。
+export function formatDate(iso: string): string {
+  if (!iso) return "";
+  const hasTime = /T\d/.test(iso);
+
+  let d: Date;
+  if (hasTime) {
+    d = new Date(iso);
+  } else {
+    // 纯日期字符串。用 UTC 方式解析再读 UTC 字段，避免时区偏移把日搞乱
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return iso;
+    d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+    if (isNaN(d.getTime())) return iso;
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${d.getUTCFullYear()} 年 ${d.getUTCMonth() + 1} 月 ${d.getUTCDate()} 日`;
+  }
+
+  if (isNaN(d.getTime())) return iso;
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const parts: string[] = [];
+  parts.push(`${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`);
+
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const s = d.getSeconds();
+  if (s !== 0) {
+    parts.push(`${pad(h)}:${pad(m)}:${pad(s)}`);
+  } else if (m !== 0) {
+    parts.push(`${pad(h)}:${pad(m)}`);
+  } else if (h !== 0) {
+    parts.push(`${pad(h)}:00`);
+  }
+  return parts.join(" ");
+}
+
 
 export interface Post extends PostMeta {
   content: string;
@@ -21,6 +62,7 @@ export interface Post extends PostMeta {
 function parsePostFromFile(filePath: string): Post {
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data, content: frontmatterContent } = matter(raw);
+  const stat = fs.statSync(filePath);
 
   const baseName = path.basename(filePath, ".md");
   // 文件名支持 "YYYY-MM-DD-slug" 或 "NN-slug" 前缀，前缀会被剥离作为排序与 slug
@@ -43,16 +85,50 @@ function parsePostFromFile(filePath: string): Post {
   }
 
   const fileDate = prefixMatch?.[1]?.match(/^(\d{4}-\d{2}-\d{2})-/)?.[1];
+  // gray-matter 对 `date: 2026-08-16` 会解析成 Date (UTC 零点)，直接 String() 会带上本地时区偏移，
+  // 导致展示时多出 08:00（中国时区）。这里把它统一转成纯日期 ISO（YYYY-MM-DD），不带时间。
+  const published = normalizeDateInput(data.date) ?? fileDate ?? "1970-01-01";
+
+  // 最后修改时间：取 fs.stat 的 mtime，并转成本地时区 ISO（秒级截断即可）
+  const lastModified = new Date(stat.mtimeMs);
+  const isoM = toLocalISO(lastModified);
 
   return {
     slug,
     title,
     description: data.description ?? "",
-    date: data.date ? String(data.date) : fileDate ?? "1970-01-01",
+    date: published,
+    lastModified: isoM,
     tags: data.tags ?? [],
     content,
     raw,
   };
+}
+
+function toLocalISO(d: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const year = d.getFullYear();
+  const mon = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const h = pad(d.getHours());
+  const m = pad(d.getMinutes());
+  const s = pad(d.getSeconds());
+  return `${year}-${mon}-${day}T${h}:${m}:${s}`;
+}
+
+// 统一 frontmatter 的日期为 YYYY-MM-DD（无时间信息），避免 gray-matter 将
+// `date: 2026-08-16` 解析为 UTC Date 后再 String() 产生本地时区偏移（多出 08:00 等）。
+function normalizeDateInput(input: unknown): string | undefined {
+  if (input == null) return undefined;
+  if (input instanceof Date) {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${input.getUTCFullYear()}-${pad(input.getUTCMonth() + 1)}-${pad(input.getUTCDate())}`;
+  }
+  if (typeof input !== "string") return String(input);
+  const s = input.trim();
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})(?:T|Z| |$)/);
+  if (m) return m[1];
+  return s;
 }
 
 function readAllPosts(): Post[] {

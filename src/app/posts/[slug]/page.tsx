@@ -6,7 +6,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import { getAllPosts, getPost, getAdjacentPosts, extractToc } from "../../lib/posts";
+import { getAllPosts, getPost, getAdjacentPosts, extractToc, formatDate } from "../../lib/posts";
 import Toc from "../../components/Toc";
 
 export function generateStaticParams() {
@@ -35,10 +35,30 @@ export default async function PostPage({
   const { prev, next } = getAdjacentPosts(slug);
   const toc = extractToc(post.content);
 
+  const pubDay = new Date(post.date);
+  const modDay = new Date(post.lastModified);
+  const updatedLater = modDay.getTime() > pubDay.getTime() + 12 * 3600 * 1000;
+
   return (
     <div className="mx-auto max-w-7xl px-8 py-12">
       <div className="flex gap-10">
         <div className="min-w-0 flex-1 max-w-4xl">
+          <div className="mb-6 flex flex-wrap items-center gap-3 text-xs text-neutral-500">
+            <time title="发布时间">📅 发布 · {formatDate(post.date)}</time>
+            {updatedLater && (
+              <>
+                <span className="text-neutral-700">·</span>
+                <time title="最后修改时间">✏️ 更新 · {formatDate(post.lastModified)}</time>
+              </>
+            )}
+            {post.tags.length > 0 && (
+              <>
+                <span className="text-neutral-700">·</span>
+                <span>🏷️ {post.tags.join(" / ")}</span>
+              </>
+            )}
+          </div>
+
           <article className="prose prose-invert max-w-none">
             <MDXRemote source={post.content} options={mdxOptions} />
           </article>
