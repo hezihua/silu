@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
+@import "katex/dist/katex.min.css";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+.prose-invert {
+  color: #d4d4d4;
+}
+
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert h4 {
+  color: #f5f5f5;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.prose-invert h1 {
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.prose-invert h2 {
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #262626;
+}
+
+.prose-invert h3 {
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.prose-invert p {
+  line-height: 1.8;
+  margin: 1rem 0;
+}
+
+.prose-invert a {
+  color: #60a5fa;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.3);
+  transition: border-color 0.2s;
+}
+
+.prose-invert a:hover {
+  border-bottom-color: #60a5fa;
+}
+
+.prose-invert strong {
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+.prose-invert blockquote {
+  border-left-color: #525252;
+  background: #171717;
+  padding: 1rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: normal;
+  color: #a3a3a3;
+}
+
+.prose-invert blockquote p {
+  margin: 0;
+}
+
+.prose-invert ul,
+.prose-invert ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose-invert ul li {
+  list-style-type: disc;
+  margin: 0.4rem 0;
+}
+
+.prose-invert ol li {
+  list-style-type: decimal;
+  margin: 0.4rem 0;
+}
+
+.prose-invert ul li::marker,
+.prose-invert ol li::marker {
+  color: #525252;
+}
+
+.prose-invert code {
+  background: #262626;
+  color: #e5e5e5;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, monospace;
+}
+
+.prose-invert code::before,
+.prose-invert code::after {
+  display: none;
+}
+
+.prose-invert pre {
+  background: #0a0a0a;
+  border: 1px solid #262626;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.prose-invert pre code {
+  background: transparent;
+  color: #e4e4e7;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.prose-invert pre code::before,
+.prose-invert pre code::after {
+  display: none;
+}
+
+.prose-invert hr {
+  border-color: #262626;
+  margin: 2rem 0;
+}
+
+.prose-invert table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.prose-invert thead th {
+  background: #171717;
+  color: #f5f5f5;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 1px solid #262626;
+}
+
+.prose-invert tbody td {
+  padding: 0.6rem 1rem;
+  border: 1px solid #262626;
+  color: #d4d4d4;
+}
+
+.prose-invert tbody tr:nth-child(even) {
+  background: #111111;
+}
+
+.prose-invert img {
+  border-radius: 0.5rem;
+  border: 1px solid #262626;
+}
+
+.prose-invert input[type="checkbox"] {
+  accent-color: #60a5fa;
+}
+
+.prose-invert del {
+  color: #525252;
+}
+
+/* Task list */
+.prose-invert .task-list-item {
+  list-style-type: none;
+  margin-left: -1.5rem;
+}
+
+.prose-invert .task-list-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Hide scrollbar (functional but invisible) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
